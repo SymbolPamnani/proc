@@ -12,8 +12,8 @@ A full-stack MiniHelpDesk ticket application built with React + TypeScript, Expr
 - End-to-end local integration with MongoDB
 
 ## Group Members
-- Member 1
-- Member 2
+- Adeena Arain
+- Symbol Rani
 
 ## Technologies
 - React + TypeScript + Vite
@@ -26,8 +26,7 @@ A full-stack MiniHelpDesk ticket application built with React + TypeScript, Expr
 ### Backend
 1. `cd backend`
 2. `npm install`
-3. Create a `.env` file with the values from `.env.example`
-4. `npm run dev`
+3. `npm run dev`
 
 ### Frontend
 1. `cd frontend`
@@ -38,7 +37,7 @@ A full-stack MiniHelpDesk ticket application built with React + TypeScript, Expr
 Create a `.env` file in `backend/` with:
 
 ```
-MONGO_URI=mongodb://localhost:27017/miniticketdb
+MONGO_URI=mongodb://2312184_db_user:symeena605@ac-tpg0kop-shard-00-00.vhlus9m.mongodb.net:27017,ac-tpg0kop-shard-00-01.vhlus9m.mongodb.net:27017,ac-tpg0kop-shard-00-02.vhlus9m.mongodb.net:27017/miniticketdb?ssl=true&replicaSet=atlas-dqvd6r-shard-0&authSource=admin&retryWrites=true&w=majority
 PORT=4000
 ```
 
