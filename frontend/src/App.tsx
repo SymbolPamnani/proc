@@ -15,6 +15,9 @@ function AppContent() {
   const [page, setPage] = useState(1);
   const [limit] = useState(INITIAL_LIMIT);
   const [total, setTotal] = useState(0);
+
+  const [stats, setStats] = useState({ highPriority: 0, open: 0, closed: 0 });
+
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<'Low' | 'Medium' | 'High'>('Low');
@@ -25,11 +28,17 @@ function AppContent() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const loadTickets = async () => {
+  useEffect(() => {
+    if (!success) return;
+    const timer = setTimeout(() => setSuccess(null), 3000);
+    return () => clearTimeout(timer);
+  }, [success]);
+
+  const loadTickets = async (currentPage = page, currentSearch = search) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchTickets(page, limit, search);
+      const data = await fetchTickets(currentPage, limit, currentSearch);
       setTickets(data.tickets);
       setTotal(data.total);
     } catch (err) {
@@ -39,9 +48,25 @@ function AppContent() {
     }
   };
 
+  const loadStats = async () => {
+    try {
+      const data = await fetchTickets(1, 1000, '');
+      setStats({
+        highPriority: data.tickets.filter((t) => t.priority === 'High').length,
+        open: data.tickets.filter((t) => t.status === 'Open').length,
+        closed: data.tickets.filter((t) => t.status === 'Closed').length,
+      });
+    } catch {
+    }
+  };
+
   useEffect(() => {
-    loadTickets();
+    loadTickets(page, search);
   }, [page]);
+
+  useEffect(() => {
+    loadStats();
+  }, []);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -62,7 +87,8 @@ function AppContent() {
       setStatus('Open');
       setSuccess('Ticket created successfully.');
       setPage(1);
-      await loadTickets();
+      await loadTickets(1, search);
+      await loadStats();
     } catch (err) {
       setError((err as Error).message || 'Could not create ticket');
     } finally {
@@ -79,10 +105,16 @@ function AppContent() {
     try {
       await apiDeleteTicket(id);
       setSuccess('Ticket deleted successfully.');
-      loadTickets();
+      await loadTickets(page, search);
+      await loadStats();
     } catch (err) {
       setError((err as Error).message || 'Could not delete ticket');
     }
+  };
+
+  const handleSearch = () => {
+    setPage(1);
+    loadTickets(1, search);
   };
 
   const totalPages = Math.max(Math.ceil(total / limit), 1);
@@ -137,17 +169,17 @@ function AppContent() {
                 <span>Total Tickets</span>
               </div>
               <div className="summary-card">
-                <strong>{tickets.filter((item) => item.priority === 'High').length}</strong>
+                <strong>{stats.highPriority}</strong>
                 <span>High Priority</span>
               </div>
             </div>
             <div className="summary-row">
               <div className="summary-card">
-                <strong>{tickets.filter((item) => item.status === 'Open').length}</strong>
+                <strong>{stats.open}</strong>
                 <span>Open</span>
               </div>
               <div className="summary-card">
-                <strong>{tickets.filter((item) => item.status === 'Closed').length}</strong>
+                <strong>{stats.closed}</strong>
                 <span>Closed</span>
               </div>
             </div>
@@ -172,9 +204,10 @@ function AppContent() {
                   className="input-field"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                   placeholder="Search by subject or description"
                 />
-                <Button label="Search" type="button" onClick={() => { setPage(1); loadTickets(); }} />
+                <Button label="Search" type="button" onClick={handleSearch} />
               </div>
             </div>
 
